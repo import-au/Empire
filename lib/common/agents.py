@@ -350,6 +350,26 @@ class Agents:
         finally:
             self.lock.release()
 
+        # write a json log to be ingested by Logstash/Elastic
+        json_save_path = self.installPath + "/downloads/"
+        try:
+            json_log = {}
+            self.lock.acquire()
+            # make the recursive directory structure if it doesn't already exist
+            if not os.path.exists(json_save_path):
+                os.makedirs(json_save_path)
+
+            json_log["timestamp"] = str(helpers.get_datetime())
+            json_log["agent"] = str(name)
+            json_log["data"] = unicode(data, errors="ignore")
+
+            f = open("%s/agent.log.json" % (json_save_path), 'a')
+            f.write(json.dumps(json_log) + "\n")
+            f.close()
+        finally:
+            self.lock.release()
+
+
 
     ###############################################################
     #
